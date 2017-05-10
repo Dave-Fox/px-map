@@ -136,7 +136,68 @@
         client.onreadystatechange = function() {
           if (client.readyState > 3) {
             if (client.status === 200) {
-              document.querySelector('px-map-layer-geojson').setAttribute('data', client.responseText);
+              let vectLayer = document.querySelector('px-map-layer-geojson');
+              vectLayer.setAttribute('data', client.responseText);
+
+              /**
+               * Hacky Leaflet.draw testing
+               */
+              const map = vectLayer.parentNode.elementInst;
+              map.options.drawControl = true;
+
+              let editableLayers = new L.FeatureGroup([]).addTo(map);
+              vectLayer.elementInst.getLayers().forEach(function (layer) {
+                editableLayers.addLayer(layer)
+              });
+
+              const drawControl = new L.Control.Draw({
+                draw: {
+                  polygon: {
+                    shapeOptions: {
+                      color: '#f357a1',
+                      weight: 10
+                    }
+                  },
+                  polyline: {
+                    shapeOptions: {
+                      color: 'red'
+                    },
+                  },
+                  rect: {
+                    shapeOptions: {
+                      color: 'green'
+                    },
+                  },
+                  circle: {
+                    shapeOptions: {
+                      color: 'steelblue'
+                    },
+                  },
+                },
+                edit: {
+                  featureGroup: editableLayers
+                }
+              });
+              map.addControl(drawControl);
+
+              map.on(L.Draw.Event.CREATED, function (e) {
+                console.log('hit!');
+                let type = e.layerType,
+                  layer = e.layer;
+
+                if (type === 'marker') {
+                  // Do marker specific actions
+                }
+
+                editableLayers.addLayer(layer);
+                console.log(editableLayers.getLayers());
+              });
+
+              console.log('drawing control');
+              console.log(editableLayers.getLayers());
+
+              /*End hacky leaflet drawing*/
+
             }
           }
         };
