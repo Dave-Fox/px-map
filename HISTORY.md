@@ -1,3 +1,27 @@
+v1.4.4
+===================
+## Bug fixes
+* Ensures data popups are not shown if the popup has no data
+
+v1.4.3
+===================
+## New features
+* Adds tap events to `px-map-marker-group` that fire when clusters or any
+  individual marker inside a cluster is tapped
+
+v1.4.2
+===================
+## Other changes
+* Remove mapbox tile layer example. Please do not use this tile layer in production.
+
+v1.4.1
+===================
+## Bug fixes
+* Removes a stray debugger statement from `px-map-layer-geojson`
+
+## Other changes
+* Fix documentation data loading issue for `px-map-layer-gejson`
+
 v1.4.0
 ===================
 ## Major bug fix
@@ -27,10 +51,6 @@ v1.3.0
 ## Bug fixes
 * A bug that caused data popups to pan the map wildly when they were opened has
   been fixed. This bug was only present in shady DOM.
-
-## Bug fixes
-* Validates that lat and lng are valid numbers and handles invalid values
-  gracefully (#54). Adds tests.
 
 v1.2.6
 ===================
