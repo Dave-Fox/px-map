@@ -153,29 +153,7 @@
           });
 
           const drawControl = new L.Control.Draw({
-            draw: {
-              polygon: {
-                shapeOptions: {
-                  color: '#f357a1',
-                  weight: 10
-                }
-              },
-              polyline: {
-                shapeOptions: {
-                  color: 'red'
-                },
-              },
-              rect: {
-                shapeOptions: {
-                  color: 'green'
-                },
-              },
-              circle: {
-                shapeOptions: {
-                  color: 'steelblue'
-                },
-              },
-            },
+            draw: false,
             edit: {
               featureGroup: editableLayers
             }
@@ -183,23 +161,45 @@
           map.addControl(drawControl);
 
           map.on(L.Draw.Event.CREATED, function (e) {
-            console.log('hit!');
             let type = e.layerType,
               layer = e.layer;
 
             if (type === 'marker') {
-              // Do marker specific actions
+              let latlng = e.layer.getLatLng();
+              layer = new L.CircleMarker(latlng, {radius: 5});
             }
 
             editableLayers.addLayer(layer);
-            console.log(editableLayers.getLayers());
+            console.log(editableLayers.getLayers().length);
           });
+        }, 100);
 
-          console.log('drawing control');
-          console.log(editableLayers.getLayers());
-        }, 100)
+        const vectorlayer = document.querySelector('px-map-layer-geojson');
+        const map = vectorlayer.parentNode.elementInst;
+        let polyline = this.createButton('Draw Line', new L.Draw.Polyline(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 0);
+        let polygon = this.createButton('Draw Polygon', new L.Draw.Polygon(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 110);
+        let point = this.createButton('Draw Point', new L.Draw.Marker(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 220);
+
+        vectorlayer.parentNode.appendChild(polyline);
+        vectorlayer.parentNode.appendChild(polygon);
+        vectorlayer.parentNode.appendChild(point);
 
         /*End hacky leaflet drawing*/
+      },
+
+      createButton: function(text, handler, offset) {
+        let button = document.createElement('button');
+        button.onclick = function() {
+          handler.enable();
+        };
+        button.innerHTML = text;
+        button.style.width = '100px';
+        button.style.position = 'absolute';
+        button.style.top = '0';
+        button.style.left = offset + 'px';
+        button.style.zIndex = '9999';
+
+        return button;
       },
 
       /**
