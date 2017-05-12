@@ -142,12 +142,66 @@
          * Hacky Leaflet.draw testing
          */
 
+        //Add circle marker editing fix
+        //Credit to https://github.com/iCarto
+
+        L.Edit.CircleMarker = L.Edit.SimpleShape.extend({
+          _createMoveMarker: function () {
+            let center = this._shape.getLatLng();
+
+            this._moveMarker = this._createMarker(center, this.options.moveIcon);
+          },
+
+          _createResizeMarker: function () {
+            // To avoid an undefined check in L.Edit.SimpleShape.removeHooks
+            this._resizeMarkers = [];
+          },
+
+          _move: function (latlng) {
+            if (this._resizeMarkers.length) {
+              let resizemarkerPoint = this._getResizeMarkerPoint(latlng);
+              // Move the resize marker
+              this._resizeMarkers[0].setLatLng(resizemarkerPoint);
+            }
+
+            // Move the circle
+            this._shape.setLatLng(latlng);
+
+            this._map.fire(L.Draw.Event.EDITMOVE, { layer: this._shape });
+          },
+        });
+
+        L.CircleMarker.addInitHook(function () {
+          if (L.Edit.CircleMarker) {
+            this.editing = new L.Edit.CircleMarker(this);
+
+            if (this.options.editable) {
+              this.editing.enable();
+            }
+          }
+
+          this.on('add', function () {
+            if (this.editing && this.editing.enabled()) {
+              this.editing.addHooks();
+            }
+          });
+
+          this.on('remove', function () {
+            if (this.editing && this.editing.enabled()) {
+              this.editing.removeHooks();
+            }
+          });
+        });
+
+        //End fix
+
         setTimeout(() => {
           const vectLayer = document.querySelector('px-map-layer-geojson');
           const map = vectLayer.parentNode.elementInst;
           map.options.drawControl = true;
 
           let editableLayers = new L.FeatureGroup([]).addTo(map);
+          this.drawingLayer = editableLayers;
           vectLayer.elementInst.getLayers().forEach(function (layer) {
             editableLayers.addLayer(layer)
           });
@@ -172,13 +226,13 @@
             editableLayers.addLayer(layer);
             console.log(editableLayers.getLayers().length);
           });
-        }, 100);
+        }, 10);
 
         const vectorlayer = document.querySelector('px-map-layer-geojson');
         const map = vectorlayer.parentNode.elementInst;
-        let polyline = this.createButton('Draw Line', new L.Draw.Polyline(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 0);
-        let polygon = this.createButton('Draw Polygon', new L.Draw.Polygon(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 110);
-        let point = this.createButton('Draw Point', new L.Draw.Marker(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 220);
+        let polyline = this.createButton('Draw Line', new L.Draw.Polyline(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 0, map);
+        let polygon = this.createButton('Draw Polygon', new L.Draw.Polygon(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 110, map);
+        let point = this.createButton('Draw Point', new L.Draw.Marker(map, {icon: new L.DivIcon({iconSize: new L.Point(8, 8), className: 'leaflet-div-icon leaflet-editing-icon'})}), 220, map);
 
         vectorlayer.parentNode.appendChild(polyline);
         vectorlayer.parentNode.appendChild(polygon);
@@ -187,10 +241,15 @@
         /*End hacky leaflet drawing*/
       },
 
-      createButton: function(text, handler, offset) {
+      createButton: function(text, handler, offset, map) {
         let button = document.createElement('button');
-        button.onclick = function() {
+        button.onclick = () => {
           handler.enable();
+          map.eachLayer( (layer) => {
+            if(layer instanceof L.FeatureGroup && layer === this.drawingLayer){
+              console.log(layer.toGeoJSON());
+            }
+          })
         };
         button.innerHTML = text;
         button.style.width = '100px';
