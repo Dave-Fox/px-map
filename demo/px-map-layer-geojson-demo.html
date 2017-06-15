@@ -48,8 +48,20 @@
           <px-map-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"></px-map-tile-layer>
           <px-map-layer-geojson
               data="{{props.data.value}}"
-              feature-style="{{props.featureStyle.value}}"
+              pane="testGeoJsonPane"
+              feature-style="{{props.featureStyle.value}}" "{{this.myFunction}}"
               show-feature-properties="{{props.showFeatureProperties.value}}">
+          </px-map-layer-geojson>
+          <px-map-layer-geojson
+            data="{{props.data.value}}"
+            pane="OtherPane"
+            feature-style="{{props.featureStyle.value}}"
+            show-feature-properties="{{props.showFeatureProperties.value}}">
+          </px-map-layer-geojson>
+          <px-map-layer-geojson
+            data="{{props.data.value}}"
+            feature-style="{{props.featureStyle.value}}"
+            show-feature-properties="{{props.showFeatureProperties.value}}">
           </px-map-layer-geojson>
         </px-map>
       </div>

@@ -35,6 +35,10 @@
         observer: 'shouldUpdateInst'
       },
 
+      pane: {
+        type: String
+      },
+
       /**
        * An object with settings that will be used to style each feature when
        * it is added to the map. The following options are available:
@@ -122,6 +126,8 @@
     },
 
     createInst(options) {
+      console.log(this.pane);
+      if(this.pane) this.parentNode.elementInst.createPane(this.pane);
       let geojsonLayer = L.geoJson(options.data, {
         pointToLayer: (feature, latlng) => {
           const featureProperties = feature.properties.style || {};
@@ -141,7 +147,9 @@
           const attributeProperties = this.getInstOptions().featureStyle;
 
           return this._getStyle(featureProperties, attributeProperties);
-        }
+        },
+
+        pane: options.pane ||'overlayPane'
       });
 
       return geojsonLayer;
@@ -219,6 +227,7 @@
     getInstOptions() {
       return {
         data: this.data || {},
+        pane: this.pane || null,
         dataHash: JSON.stringify(this.data || {}),
         featureStyle: this.featureStyle || {},
         featureStyleHash: JSON.stringify(this.featureStyle || {}),
